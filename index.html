@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queues — 2-Hour Mastery Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6FB;
+    --card:#FFFFFF;
+    --ink:#1B1E2B;
+    --ink-soft:#5B5F77;
+    --line:#E3E4F0;
+
+    --recur:#5B4FE0;      /* structure / definition step */
+    --recur-bg:#EDEBFC;
+    --base:#0E8F73;       /* operation / mechanism step */
+    --base-bg:#E1F5EF;
+    --return:#C4831A;     /* cost / complexity step */
+    --return-bg:#FBF0DD;
+    --danger:#E5533D;     /* pitfall / common mix-up */
+    --danger-bg:#FCE9E6;
+
+    --code-bg:#1B1E2B;
+    --code-text:#E7E9F5;
+    --code-key:#9D9EFF;
+    --code-str:#7FD9B9;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; margin:0 0 .4em 0; color:var(--ink); font-weight:700;}
+  code, pre, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:var(--recur);}
+  .wrap{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:270px 1fr; gap:32px; padding:28px 24px 100px;}
+  @media (max-width:880px){ .wrap{grid-template-columns:1fr;} .sidebar{position:static !important; order:2;} }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    grid-column:1/-1;
+    background:linear-gradient(135deg,#1B1E2B 0%, #2A2560 100%);
+    border-radius:22px; padding:40px 44px; color:#fff; position:relative; overflow:hidden;
+    margin-bottom:6px;
+  }
+  .hero::before{
+    content:"enqueue → dequeue";
+    position:absolute; right:-6px; bottom:-18px; font-family:'JetBrains Mono',monospace;
+    font-size:44px; color:rgba(255,255,255,.06); font-weight:600; white-space:nowrap; pointer-events:none;
+  }
+  .eyebrow{font-family:'JetBrains Mono',monospace; letter-spacing:.14em; font-size:12.5px; color:#B7B2FF; text-transform:uppercase; margin-bottom:10px;}
+  .hero h1{font-size:44px; color:#fff; margin-bottom:8px;}
+  .hero p.sub{color:#C9CBE8; max-width:640px; font-size:15.5px; margin:0;}
+  .hero .badges{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;}
+  .hero .badge{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); padding:6px 14px; border-radius:999px; font-size:12.5px; color:#fff;}
+
+  /* ---------- SIDEBAR / ROADMAP ---------- */
+  .sidebar{position:sticky; top:20px; align-self:start;}
+  .stackcard{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px 16px; margin-bottom:-9px; box-shadow:0 3px 0 rgba(27,30,43,.05);
+    position:relative; transition:transform .15s ease;
+  }
+  .stackcard:hover{transform:translateY(-2px);}
+  .stackcard:last-child{margin-bottom:0;}
+  .stackcard .time{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft);}
+  .stackcard a{display:flex; align-items:flex-start; gap:9px; text-decoration:none; color:var(--ink); font-weight:600; font-size:13.6px; margin-top:2px;}
+  .stackcard input[type=checkbox]{margin-top:3px; accent-color:var(--base); width:15px; height:15px; flex:none;}
+  .sidebar-title{font-family:'JetBrains Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-soft); margin:0 4px 12px;}
+  .sidebar-note{font-size:12px; color:var(--ink-soft); margin:16px 4px 0; line-height:1.5;}
+
+  /* ---------- MAIN CONTENT ---------- */
+  main{min-width:0;}
+  section.lesson{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:32px 36px; margin-bottom:22px; scroll-margin-top:20px;}
+  .lesson-kicker{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .lesson-num{
+    font-family:'JetBrains Mono',monospace; background:var(--ink); color:#fff; font-size:12px; font-weight:600;
+    padding:3px 10px; border-radius:7px;
+  }
+  .lesson-time{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft);}
+  section.lesson h2{font-size:25px; margin-top:2px;}
+  section.lesson h3{font-size:16.5px; margin-top:26px; margin-bottom:10px;}
+  section.lesson p{color:var(--ink); margin:0 0 12px;}
+  .lede{color:var(--ink-soft); font-size:15px;}
+
+  .box{border-radius:12px; padding:14px 18px; margin:12px 0; border:1px solid transparent;}
+  .box h4{font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; font-family:'JetBrains Mono',monospace; margin:0 0 6px;}
+  .box p{margin:0; font-size:14.5px;}
+  .box.recur{background:var(--recur-bg); border-color:#D8D3FA;} .box.recur h4{color:var(--recur);}
+  .box.base{background:var(--base-bg); border-color:#C7ECDF;} .box.base h4{color:var(--base);}
+  .box.return{background:var(--return-bg); border-color:#F3DFB1;} .box.return h4{color:var(--return);}
+  .box.danger{background:var(--danger-bg); border-color:#F6CFC8;} .box.danger h4{color:var(--danger);}
+
+  .keyline{border-left:3px solid var(--recur); background:#FAFAFF; padding:12px 18px; border-radius:0 10px 10px 0; margin:16px 0; font-style:italic; color:var(--ink-soft); font-size:14.5px;}
+
+  table{width:100%; border-collapse:collapse; margin:12px 0 18px; font-size:14px;}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{font-family:'JetBrains Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  .tbl-recur th:nth-child(1),.tbl-recur td:nth-child(1){border-left:3px solid var(--recur);}
+  .tbl-iter th:nth-child(2),.tbl-iter td:nth-child(2){border-left:3px solid var(--return);}
+
+  pre.code{
+    background:var(--code-bg); color:var(--code-text); border-radius:12px; padding:16px 20px;
+    font-size:13.6px; line-height:1.6; overflow-x:auto; margin:12px 0;
+  }
+  .code .kw{color:var(--code-key); font-weight:600;}
+  .code .fn{color:#8FD3FF;}
+  .code .cm{color:#7C8096; font-style:italic;}
+
+  /* token row (array cells) */
+  .arr{display:flex; gap:6px; flex-wrap:wrap; margin:10px 0; align-items:flex-end;}
+  .arr .cell{display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .arr .idx{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft);}
+  .arr .el{
+    font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px;
+    border:1.5px solid var(--line); border-radius:8px; padding:6px 11px; background:#FAFAFC; min-width:20px; text-align:center;
+  }
+  .arr .el.pivot{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .arr .el.lo{background:var(--base-bg); border-color:var(--base); color:#0B6650;}
+  .arr .el.hi{background:var(--return-bg); border-color:var(--return); color:#8A5C10;}
+  .arr .el.empty{background:transparent; border-style:dashed; color:var(--ink-soft);}
+
+  /* vertical stack visual (used for stack-side comparisons only) */
+  .stackrow{display:flex; gap:32px; align-items:flex-end; margin:14px 0 18px; flex-wrap:wrap;}
+  .stackitem{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .stackitem .cap{font-size:12.5px; font-weight:600; color:var(--ink-soft); text-align:center; max-width:150px;}
+  .stackcol{display:flex; flex-direction:column-reverse; width:74px; border:1.5px solid var(--line); border-radius:10px; overflow:hidden; min-height:24px;}
+  .stackcol .slot{padding:9px 8px; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:13px; border-top:1px solid var(--line); background:#FAFAFC;}
+  .stackcol .slot:first-child{border-top:none;}
+  .stackcol .slot.top{background:var(--ink); color:#fff;}
+  .stackcol .slot.new{background:var(--base-bg); border-color:var(--base); color:#0B6650;}
+
+  /* horizontal queue visual */
+  .qrow{display:flex; align-items:center; gap:14px; margin:14px 0 18px; flex-wrap:wrap;}
+  .qitem{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .qcap{font-size:12.5px; font-weight:600; color:var(--ink-soft); text-align:center; max-width:170px;}
+  .qtrack{display:flex; border:1.5px solid var(--line); border-radius:10px; overflow:hidden; min-height:24px;}
+  .qtrack .slot{padding:11px 15px; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px; border-left:1px solid var(--line); background:#FAFAFC; min-width:14px;}
+  .qtrack .slot:first-child{border-left:none;}
+  .qtrack .slot.front{background:var(--ink); color:#fff;}
+  .qtrack .slot.new{background:var(--base-bg); border-color:var(--base); color:#0B6650;}
+  .qtrack .slot.ghost{background:transparent; border-left:1px dashed var(--line); color:var(--danger); text-decoration:line-through; opacity:.7;}
+  .qend{font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; white-space:nowrap;}
+  .qend.f{color:var(--recur);}
+  .qend.b{color:var(--base);}
+
+  .q-timeline{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:14px 0 8px;}
+  .q-panel{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .q-panel .label{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--ink-soft); text-align:center; max-width:100px;}
+  .q-mini{display:flex; border:1.5px solid var(--line); border-radius:8px; overflow:hidden; min-height:18px;}
+  .q-mini .slot{padding:6px 9px; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:12.5px; border-left:1px solid var(--line); background:#FAFAFC;}
+  .q-mini .slot:first-child{border-left:none;}
+  .q-mini .slot.front{background:var(--ink); color:#fff;}
+  .q-mini .slot.new{background:var(--base-bg); border-color:var(--base); color:#0B6650;}
+  .q-arrow{color:var(--ink-soft); font-size:15px; align-self:center;}
+
+  /* ring diagrams for circular arrays */
+  .ring-wrap{display:flex; gap:34px; align-items:center; flex-wrap:wrap; margin:14px 0 8px;}
+  .ring-block{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .ring-cap{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-soft); text-align:center;}
+  .ring-count{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink); background:#FAFAFC; border:1px solid var(--line); border-radius:8px; padding:3px 10px;}
+
+  /* comparison split */
+  .split{display:flex; gap:28px; flex-wrap:wrap; margin:14px 0 8px;}
+  .split-col{flex:1; min-width:220px;}
+  .split-col h5{font-family:'JetBrains Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin:0 0 10px; text-align:center;}
+
+  ul.tight{margin:6px 0 14px; padding-left:20px;}
+  ul.tight li{margin-bottom:5px;}
+  ol.tight{margin:6px 0 14px; padding-left:20px;}
+  ol.tight li{margin-bottom:7px;}
+
+  details.flash{border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:8px; background:#FAFAFC;}
+  details.flash summary{cursor:pointer; font-weight:600; font-size:14.5px; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+  details.flash summary::after{content:"reveal ▾"; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--recur); font-weight:500;}
+  details.flash[open] summary::after{content:"hide ▴";}
+  details.flash .answer{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); font-size:14px; color:var(--ink-soft);}
+
+  .quiz-q{border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin-bottom:12px;}
+  .quiz-q .qnum{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-soft);}
+  .quiz-q p.qtext{font-weight:600; margin:4px 0 8px; font-size:14.8px;}
+  .quiz-q .opts{font-size:13.8px; color:var(--ink-soft); margin:0 0 8px;}
+  .quiz-q details summary{cursor:pointer; color:var(--recur); font-size:13px; font-weight:600; list-style:none;}
+  .quiz-q details summary::after{content:" (show answer)";}
+  .quiz-q details[open] summary::after{content:"";}
+  .quiz-q .ans{margin-top:8px; padding:10px 14px; background:var(--base-bg); border-radius:8px; font-size:13.8px; color:#0B6650;}
+
+  .cram{background:linear-gradient(135deg,#1B1E2B,#2A2560); color:#fff; border-radius:18px; padding:32px 36px; margin-bottom:22px;}
+  .cram h2{color:#fff;}
+  .cram .lede{color:#C9CBE8;}
+  .cram .box{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);}
+  .cram .box h4{color:#B7B2FF;}
+  .cram .box p{color:#E7E8F5;}
+  .cram table{color:#E7E8F5;}
+  .cram th{color:#B7B2FF;}
+  .cram td, .cram th{border-bottom:1px solid rgba(255,255,255,.14);}
+
+  footer{grid-column:1/-1; text-align:center; color:var(--ink-soft); font-size:12.5px; padding-top:10px;}
+
+  @media print{
+    body{background:#fff;}
+    .sidebar{display:none;}
+    .wrap{grid-template-columns:1fr; display:block;}
+    section.lesson, .cram{break-inside:avoid; box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">IT2X11 · Data Structures Algorithms · Topic 09</div>
+    <h1>Queues</h1>
+    <p class="sub">A complete, exam-ready study sheet condensed from the 6-lesson e-lesson on queues — FIFO behaviour, comparing queues to stacks, the Queue ADT in Python, and building faster queues with circular arrays — built around a 2-hour memorisation session. Colour-coded throughout: <b style="color:#B7B2FF">structure</b>, <b style="color:#6FE3BE">operation</b>, <b style="color:#F2C264">cost</b>.</p>
+    <div class="badges">
+      <span class="badge">⏱ 2-hour plan</span>
+      <span class="badge">5 lessons condensed</span>
+      <span class="badge">16 practice questions w/ answers</span>
+      <span class="badge">Cram sheet included</span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-title">Study roadmap</div>
+
+    <div class="stackcard">
+      <a href="#l1"><input type="checkbox"><span>Understanding Queues: Definition Core Properties <span class="time">(0:00–0:20)</span></span></a>
+    </div>
+    <div class="stackcard">
+      <a href="#l2"><input type="checkbox"><span>Comparing Stacks Queues: Key Differences <span class="time">(0:20–0:40)</span></span></a>
+    </div>
+    <div class="stackcard">
+      <a href="#l3"><input type="checkbox"><span>Abstract Data Types: The Queue ADT <span class="time">(0:40–0:55)</span></span></a>
+    </div>
+    <div class="stackcard">
+      <a href="#l4"><input type="checkbox"><span>Implementing the Queue ADT in Python <span class="time">(0:55–1:20)</span></span></a>
+    </div>
+    <div class="stackcard">
+      <a href="#l5"><input type="checkbox"><span>Implementing Queues with Circular Arrays <span class="time">(1:20–1:45)</span></span></a>
+    </div>
+    <div class="stackcard">
+      <a href="#cram"><input type="checkbox"><span>Cram Sheet <span class="time">(1:45–1:53)</span></span></a>
+    </div>
+    <div class="stackcard">
+      <a href="#quiz"><input type="checkbox"><span>Practice Quiz <span class="time">(1:53–2:00)</span></span></a>
+    </div>
+
+    <p class="sidebar-note">Tick each box off as you go. Every lesson circles back to one idea: a queue only ever lets you enter at the <i>back</i> and leave at the <i>front</i> — that one separation of entry and exit points is exactly what makes FIFO fair, and exactly why circular arrays can make it fast without ever shifting a single element.</p>
+  </aside>
+
+  <main>
+
+    <!-- ============ LESSON 1 ============ -->
+    <section class="lesson" id="l1">
+      <div class="lesson-kicker"><span class="lesson-num">LESSON 1 / 5</span><span class="lesson-time">~20 min</span></div>
+      <h2>Understanding Queues: Definition and Core Properties</h2>
+      <p class="lede">Why the fairest data structure in computer science is also one of the simplest: first come, first served.</p>
+
+      <h3>Why queues matter</h3>
+      <p>Imagine waiting in line at a coffee shop, each person patiently moving forward as the barista serves the next customer. That familiar scenario is a perfect model for a <b>queue</b> — a data structure that is just as important in computer science as it is in daily life. Queues help computers manage tasks, requests, and data in an orderly fashion, ensuring fairness and efficiency, from print spooling to web server request handling.</p>
+
+      <div class="box recur">
+        <h4>Structure — what is a queue?</h4>
+        <p>A <b>queue</b> is a linear data structure that restricts how items are added and removed. Items can only be added at one end, called the <b>back</b>, and removed from the other end, called the <b>front</b>. This guarantees <b>First-In, First-Out (FIFO)</b>: the first item added is always the first one removed — no item can skip ahead of one that arrived earlier.</p>
+      </div>
+
+      <h3>Key queue terminology</h3>
+      <table>
+        <tr><th>Term</th><th>Definition</th></tr>
+        <tr><td><b>Queue</b></td><td>A linear data structure where items are added at the back and removed from the front, following the FIFO principle.</td></tr>
+        <tr><td><b>Linear data structure</b></td><td>A structure where elements are arranged in a sequence, one after another.</td></tr>
+        <tr><td><b>FIFO</b></td><td>First-In, First-Out — the first item added to a queue is the first one to be removed.</td></tr>
+        <tr><td><b>Front</b></td><td>The end of the queue from which items are removed (dequeued).</td></tr>
+        <tr><td><b>Back</b></td><td>The end of the queue at which items are added (enqueued).</td></tr>
+        <tr><td><b>Enqueue</b></td><td>The operation of adding an item to the back of the queue.</td></tr>
+        <tr><td><b>Dequeue</b></td><td>The operation of removing and returning the front item from the queue.</td></tr>
+      </table>
+
+      <div class="box base">
+        <h4>Operation — enqueue and dequeue</h4>
+        <p><b>Enqueue:</b> add an item to the back. Starting empty, enqueue 'A' — A sits alone. Enqueue 'B' next and B joins behind A, at the back; A is still at the front. <b>Dequeue:</b> remove the front item. With A at the front and B at the back, dequeue removes and returns A — B now becomes the new front. Notice enqueue and dequeue act on <i>opposite</i> ends — that's what makes a queue different from a stack.</p>
+      </div>
+
+      <h3>Front and back, visualised</h3>
+      <div class="qrow">
+        <div class="qitem">
+          <span class="qend f">← front / dequeue</span>
+        </div>
+        <div class="qtrack">
+          <div class="slot front">A</div>
+          <div class="slot">B</div>
+          <div class="slot">C</div>
+          <div class="slot new">D</div>
+        </div>
+        <div class="qitem">
+          <span class="qend b">back / enqueue →</span>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft)">A is the longest-waiting item and sits at the front (dark) — it will be the next one dequeued. D was just enqueued and sits at the back (green). Items enter on the right and exit on the left, always in that order.</p>
+
+      <h3>Enqueue / dequeue, step by step</h3>
+      <div class="q-timeline">
+        <div class="q-panel"><div class="label">empty</div><div class="q-mini"></div></div>
+        <div class="q-arrow">→</div>
+        <div class="q-panel"><div class="label">enqueue(A)</div><div class="q-mini"><div class="slot front">A</div></div></div>
+        <div class="q-arrow">→</div>
+        <div class="q-panel"><div class="label">enqueue(B)</div><div class="q-mini"><div class="slot front">A</div><div class="slot new">B</div></div></div>
+        <div class="q-arrow">→</div>
+        <div class="q-panel"><div class="label">enqueue(C)</div><div class="q-mini"><div class="slot front">A</div><div class="slot">B</div><div class="slot new">C</div></div></div>
+        <div class="q-arrow">→</div>
+        <div class="q-panel"><div class="label">dequeue() → A</div><div class="q-mini"><div class="slot front">B</div><div class="slot">C</div></div></div>
+      </div>
+
+      <div class="box danger">
+        <h4>Pitfall — front and back are not interchangeable</h4>
+        <p>A common mix-up: treating a queue like it has one flexible end you can add to or remove from at will. It doesn't. Enqueue <b>always</b> happens at the back; dequeue <b>always</b> happens at the front. Enqueueing at the front, or dequeueing from the back, isn't a shortcut — it silently breaks the FIFO guarantee the whole structure exists to provide.</p>
+      </div>
+
+      <div class="keyline">Think of a queue like a line at a ticket counter: new arrivals join the back, and only the person who has been waiting longest — at the front — gets served next. A printer works the same way: the first document submitted is the first one printed, however many jobs pile up behind it. Web servers use the same idea to handle incoming requests fairly, and breadth-first search uses a queue to explore a graph level by level, in the exact order nodes are discovered.
+      </div>
+
+      <h3>Queue use cases in the real world</h3>
+      <table class="tbl-recur">
+        <tr><th>Queue use case</th><th>Not a queue use case</th></tr>
+        <tr><td>Print job management in printers</td><td>Undo functionality in a text editor</td></tr>
+        <tr><td>Task scheduling in operating systems</td><td>Browsing history in a web browser</td></tr>
+        <tr><td>Handling requests in web servers</td><td></td></tr>
+        <tr><td>Breadth-first search in graph algorithms</td><td></td></tr>
+      </table>
+      <p style="font-size:13.5px;color:var(--ink-soft)">The tell: does the item that arrived <i>first</i> need to be handled <i>first</i>? Print jobs, task scheduling, and web requests all say yes. Undo and browser history are the opposite — the most <i>recent</i> action is handled first — which is exactly what a stack is for, as Lesson 2 explores.</p>
+
+      <h3>Quick self-check</h3>
+      <details class="flash"><summary>Which best describes the order of operations in a queue?</summary>
+        <div class="answer">First-In, First-Out (FIFO) — not LIFO, not random access, and not priority-based removal. The item that has waited longest always leaves next.</div>
+      </details>
+      <details class="flash"><summary>A queue contains A, B, and C, with A at the front (the first one enqueued). What happens when you call dequeue()?</summary>
+        <div class="answer">A is removed and returned from the front of the queue — B becomes the new front. Dequeue always acts on the front item, never the back.</div>
+      </details>
+      <details class="flash"><summary>Which of these are real-world applications of queues? (Print job management, Undo functionality in text editors, Task scheduling in operating systems, Handling requests in web servers, Browsing history in web browsers)</summary>
+        <div class="answer">Print job management, task scheduling in operating systems, and handling requests in web servers — all preserve first-come-first-served order. Undo and browsing history are LIFO behaviours, so they belong to stacks, not queues.</div>
+      </details>
+    </section>
+
+    <!-- ============ LESSON 2 ============ -->
+    <section class="lesson" id="l2">
+      <div class="lesson-kicker"><span class="lesson-num">LESSON 2 / 5</span><span class="lesson-time">~20 min</span></div>
+      <h2>Comparing Stacks and Queues: Key Differences</h2>
+      <p class="lede">Same family of linear structures, opposite rules — knowing which one to reach for is half the battle.</p>
+
+      <h3>Two linear structures, two disciplines</h3>
+      <p>Stacks and queues are both linear data structures: their elements are arranged in a sequence. But they differ in how items are added and removed. A stack allows insertion and removal at only <b>one</b> end (the top). A queue insists on <b>two different</b> ends — items are added at the back and removed from the front. That single design decision is what gives each structure its entire personality.</p>
+
+      <div class="box recur">
+        <h4>Structure — key terms, side by side</h4>
+        <p><b>Stack:</b> a linear data structure where items are added and removed from the <i>same</i> end, called the top — <b>LIFO</b> (Last-In, First-Out). <b>Queue:</b> a linear data structure where items are added at the back and removed from the front — <b>FIFO</b> (First-In, First-Out).</p>
+      </div>
+
+      <h3>Stack vs. queue, at a glance</h3>
+      <table>
+        <tr><th></th><th>Stack</th><th>Queue</th></tr>
+        <tr><td><b>Add operation</b></td><td>push — always at the top</td><td>enqueue — always at the back</td></tr>
+        <tr><td><b>Remove operation</b></td><td>pop — always from the top</td><td>dequeue — always from the front</td></tr>
+        <tr><td><b>Access points</b></td><td>one end (top)</td><td>two ends (front back)</td></tr>
+        <tr><td><b>Governing principle</b></td><td>LIFO — last in, first out</td><td>FIFO — first in, first out</td></tr>
+      </table>
+
+      <h3>Stack vs. queue, visualised</h3>
+      <div class="split">
+        <div class="split-col">
+          <h5>Stack — one end, LIFO</h5>
+          <div class="stackrow" style="justify-content:center;">
+            <div class="stackitem">
+              <div class="cap">push(D) / pop() ↕ — both at the <b>top</b></div>
+              <div class="stackcol">
+                <div class="slot">A</div>
+                <div class="slot">B</div>
+                <div class="slot">C</div>
+                <div class="slot top">D</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="split-col">
+          <h5>Queue — two ends, FIFO</h5>
+          <div class="qrow" style="justify-content:center;">
+            <div class="qitem"><span class="qend f">front</span></div>
+            <div class="qtrack">
+              <div class="slot front">A</div>
+              <div class="slot">B</div>
+              <div class="slot">C</div>
+              <div class="slot new">D</div>
+            </div>
+            <div class="qitem"><span class="qend b">back</span></div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft)">In the stack, D (the last item pushed) is the first one popped. In the queue, A (the first item enqueued) is the first one dequeued — even though D just joined at the back.</p>
+
+      <div class="box base">
+        <h4>Operation — adding, removing, and processing order</h4>
+        <p>Stacks add with <b>push</b> and remove with <b>pop</b> — both at the top. Queues add with <b>enqueue</b> (back) and remove with <b>dequeue</b> (front). The knock-on effect: a stack always processes the <i>most recently added</i> item next; a queue always processes the <i>longest-waiting</i> item next.</p>
+      </div>
+
+      <div class="box return">
+        <h4>Cost — picking the structure that matches the problem</h4>
+        <p>Choosing between a stack and a queue isn't about performance first — it's about which order the problem actually needs. Need to reverse or undo the most recent action? That's LIFO — reach for a stack. Need to guarantee fairness, so the earliest request is always handled first? That's FIFO — reach for a queue. Using the wrong one doesn't just cost you speed; it gives you the wrong order entirely.</p>
+      </div>
+
+      <div class="box danger">
+        <h4>Pitfall — don't assume they're interchangeable</h4>
+        <p>Because stacks and queues look similar (linear, restricted access), it's tempting to assume they behave similarly too. They don't: neither allows random access to elements in the middle, but a stack's single end means push and pop compete for the <i>same</i> spot, while a queue's two ends mean enqueue and dequeue never touch the same spot at all.</p>
+      </div>
+
+      <h3>Classic use cases, side by side</h3>
+      <table class="tbl-recur">
+        <tr><th>Stack use cases</th><th>Queue use cases</th></tr>
+        <tr><td>Function call stack in programming</td><td>Print job scheduling</td></tr>
+        <tr><td>Undo history in applications</td><td>Task scheduling in operating systems</td></tr>
+        <tr><td>Browser history navigation</td><td>Breadth-first search (BFS) in graph algorithms</td></tr>
+        <tr><td></td><td>Handling requests in web servers</td></tr>
+      </table>
+
+      <div class="keyline">A stack of plates in a cafeteria is a classic stack: the last plate placed on top is the first one taken (LIFO). A line of people waiting at a ticket counter is a classic queue: the first person to arrive is the first to be served (FIFO). Same idea of "restricted access," completely different order of service.</div>
+
+      <h3>Quick self-check</h3>
+      <details class="flash"><summary>Which statements correctly describe the differences between stacks and queues? (Stacks are suitable for reversing actions / Queues allow insertion and removal at the same end / Stacks and queues both allow random access / Stacks operate on LIFO / Queues operate on FIFO)</summary>
+        <div class="answer">Correct: stacks suit reversing actions; stacks are LIFO; queues are FIFO. Incorrect: queues use <i>two different</i> ends (not the same end), and neither structure allows random access to elements in the middle.</div>
+      </details>
+      <details class="flash"><summary>Sort these into Stack or Queue: browser history navigation, call stack in programming, undo feature in a text editor, print job management, task scheduling in operating systems.</summary>
+        <div class="answer"><b>Stack:</b> browser history navigation, call stack in programming, undo feature in a text editor. <b>Queue:</b> print job management, task scheduling in operating systems.</div>
+      </details>
+    </section>
+
+    <!-- ============ LESSON 3 ============ -->
+    <section class="lesson" id="l3">
+      <div class="lesson-kicker"><span class="lesson-num">LESSON 3 / 5</span><span class="lesson-time">~15 min</span></div>
+      <h2>Abstract Data Types: The Queue ADT</h2>
+      <p class="lede">The same trick you saw with the Stack ADT, applied to a different set of rules: define the <i>what</i> before you touch the <i>how</i>.</p>
+
+      <h3>Abstraction, again</h3>
+      <p>An <b>Abstract Data Type (ADT)</b> is a model that defines a data structure by the operations it supports, without pinning down how those operations are implemented. This separation lets programmers use a data structure based on its behaviour, not its internal machinery. The <b>Queue ADT</b> applies exactly that idea to the enqueue/dequeue/FIFO rules from Lessons 1–2.</p>
+
+      <div class="box recur">
+        <h4>Structure — key terms</h4>
+        <p><b>ADT:</b> a model that defines a data structure by its allowed operations and behaviours, not by its implementation details. <b>Queue ADT:</b> an ADT where items are added at the back and removed from the front, following FIFO. <b>Interface:</b> the set of operations an ADT provides (enqueue, dequeue, isEmpty, …). <b>Implementation:</b> the actual code that carries those operations out internally.</p>
+      </div>
+
+      <h3>The Queue ADT interface</h3>
+      <table>
+        <tr><th>Operation</th><th>What it does</th></tr>
+        <tr><td><code>Queue()</code></td><td>Creates a new, empty queue.</td></tr>
+        <tr><td><code>isEmpty()</code></td><td>Returns a boolean indicating whether the queue is empty.</td></tr>
+        <tr><td><code>__len__()</code></td><td>Returns the number of items currently in the queue.</td></tr>
+        <tr><td><code>enqueue(item)</code></td><td>Adds the given item to the back of the queue.</td></tr>
+        <tr><td><code>dequeue()</code></td><td>Removes and returns the front item — cannot be called on an empty queue.</td></tr>
+        <tr><td><code>front()</code> / <code>peek()</code></td><td>Returns the front item of a non-empty queue without removing it.</td></tr>
+      </table>
+
+      <div class="box base">
+        <h4>Operation — why abstraction matters</h4>
+        <p><b>Hides complexity:</b> you can use a queue without knowing whether it's built on a list, an array, or linked nodes. <b>Enables flexibility:</b> the same ADT can be implemented multiple ways — swap one out for another without changing how client code calls it. <b>Supports reusability:</b> once the interface is defined, it can be reused across many programs regardless of the underlying implementation.</p>
+      </div>
+
+      <h3>Same interface, different implementations</h3>
+      <p style="font-size:13.5px;color:var(--ink-soft)">Whether the queue is built on an array, a Python list, or linked nodes, the user interacts with it only through <code>enqueue</code>, <code>dequeue</code>, <code>isEmpty</code>, and <code>__len__</code> — the implementation stays hidden behind that interface.</p>
+
+      <table>
+        <tr><th>Approach</th><th>Strengths</th><th>Weaknesses</th></tr>
+        <tr><td>Python list</td><td>Simple and quick to write; built-in methods handle the heavy lifting.</td><td>Removing from the front shifts every remaining element — inefficient for large queues.</td></tr>
+        <tr><td>Circular array</td><td>No shifting needed — enqueue and dequeue both become O(1); predictable, fixed memory use.</td><td>Fixed capacity; resizing beyond the initial size adds complexity.</td></tr>
+        <tr><td>Linked list</td><td>Dynamic sizing; enqueue and dequeue stay efficient without shifting elements.</td><td>Extra memory for pointers; more complex to implement correctly.</td></tr>
+      </table>
+
+      <div class="box return">
+        <h4>Cost — the trade-off in one line</h4>
+        <p>A Python list wins on simplicity. Circular arrays and linked lists win on performance, because both avoid the shifting cost that comes from removing an item from the <i>front</i> of a plain list — a cost Lesson 4 will make concrete, and Lesson 5 will solve.</p>
+      </div>
+
+      <div class="box danger">
+        <h4>Pitfall — don't assume every implementation behaves the same underneath</h4>
+        <p>Because the Queue ADT interface always looks the same, it's tempting to assume every implementation performs the same too. It doesn't — a list-based <code>dequeue()</code> and a circular-array-based <code>dequeue()</code> both "remove and return the front item," but one shifts every remaining element and the other doesn't. Same interface, very different cost.</p>
+      </div>
+
+      <h3>Quick self-check</h3>
+      <details class="flash"><summary>Which of the following best describes an Abstract Data Type (ADT)?</summary>
+        <div class="answer">A set of operations and behaviours defined independently of implementation — not a specific memory layout, a language feature, or a sorting algorithm.</div>
+      </details>
+      <details class="flash"><summary>True or false: because the Queue ADT interface stays the same, you can swap a list-based queue for a circular-array-based queue without changing how client code calls it.</summary>
+        <div class="answer">True — that's the whole point of an ADT. Client code only ever calls <code>enqueue</code>, <code>dequeue</code>, <code>isEmpty</code>, and <code>__len__</code>, regardless of what's happening underneath.</div>
+      </details>
+    </section>
+
+    <!-- ============ LESSON 4 ============ -->
+    <section class="lesson" id="l4">
+      <div class="lesson-kicker"><span class="lesson-num">LESSON 4 / 5</span><span class="lesson-time">~25 min</span></div>
+      <h2>Implementing the Queue ADT in Python</h2>
+      <p class="lede">From blueprint to running code — and the first hint that not every O(1)-looking operation stays that way.</p>
+
+      <h3>From concept to code</h3>
+      <p>The Queue ADT defines what a queue should do, but not how it should be built. Python's built-in <code>list</code> gives a fast, familiar way to get a working queue on the page: <code>append()</code> to add at the back, and a removal from index 0 to take from the front.</p>
+
+      <h3>Python implementation</h3>
+      <pre class="code"><span class="cm"># Implementation of the Queue ADT using a Python list.</span>
+<span class="kw">class</span> <span class="fn">Queue</span>:
+    <span class="cm"># Creates an empty queue.</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self._qList = list()
+
+    <span class="cm"># Returns True if the queue is empty.</span>
+    <span class="kw">def</span> <span class="fn">isEmpty</span>(self):
+        <span class="kw">return</span> len(self._qList) == 0
+
+    <span class="cm"># Returns the number of items in the queue.</span>
+    <span class="kw">def</span> <span class="fn">__len__</span>(self):
+        <span class="kw">return</span> len(self._qList)
+
+    <span class="cm"># Adds the given item to the queue.</span>
+    <span class="kw">def</span> <span class="fn">enqueue</span>(self, item):
+        self._qList.append(item)
+
+    <span class="cm"># Removes and returns the first item in the queue.</span>
+    <span class="kw">def</span> <span class="fn">dequeue</span>(self):
+        assert not self.isEmpty(), <span class="fn">"Cannot dequeue from an empty queue."</span>
+        <span class="kw">return</span> self._qList.pop(0)</pre>
+
+      <table>
+        <tr><th>Method</th><th>What it does</th></tr>
+        <tr><td><code>enqueue(item)</code></td><td>Appends <code>item</code> to the end of the internal list — it becomes the new back.</td></tr>
+        <tr><td><code>dequeue()</code></td><td>Asserts the queue isn't empty, then removes and returns <code>self._qList[0]</code> via <code>.pop(0)</code>.</td></tr>
+        <tr><td><code>isEmpty()</code></td><td>Returns <code>True</code> when <code>len(self._qList) == 0</code>.</td></tr>
+        <tr><td><code>__len__()</code></td><td>Returns <code>len(self._qList)</code> — lets you call <code>len(queue)</code> directly.</td></tr>
+      </table>
+
+      <div class="box recur">
+        <h4>Structure — front = index 0, back = last index</h4>
+        <p>The list's own order stands in for the queue's order: index 0 is the logical front, and the last index is the logical back. Enqueue appends to the end; dequeue removes from index 0.</p>
+      </div>
+
+      <h3>The list, before and after a dequeue</h3>
+      <div class="ring-wrap" style="gap:26px;">
+        <div class="ring-block">
+          <div class="ring-cap">before dequeue()</div>
+          <div class="arr">
+            <div class="cell"><div class="idx">0</div><div class="el pivot">A</div></div>
+            <div class="cell"><div class="idx">1</div><div class="el">B</div></div>
+            <div class="cell"><div class="idx">2</div><div class="el">C</div></div>
+            <div class="cell"><div class="idx">3</div><div class="el">D</div></div>
+            <div class="cell"><div class="idx">4</div><div class="el lo">E</div></div>
+          </div>
+        </div>
+        <div class="q-arrow" style="align-self:center;">dequeue() removes A →</div>
+        <div class="ring-block">
+          <div class="ring-cap">after dequeue() — everything shifted left</div>
+          <div class="arr">
+            <div class="cell"><div class="idx">0</div><div class="el pivot">B</div></div>
+            <div class="cell"><div class="idx">1</div><div class="el">C</div></div>
+            <div class="cell"><div class="idx">2</div><div class="el">D</div></div>
+            <div class="cell"><div class="idx">3</div><div class="el lo">E</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="box return">
+        <h4>Cost — enqueue is O(1), dequeue is O(n)</h4>
+        <p>Appending to the end of a Python list is <b>O(1)</b> — no shifting needed. But <code>pop(0)</code> removes from the <i>front</i>, which forces every remaining element to shift one position to the left, making dequeue <b>O(n)</b>. This is the opposite trade-off from a stack, where both push and pop touch the same end (the end of the list) and stay O(1). A queue's two ends are precisely what breaks that symmetry with a plain list.</p>
+      </div>
+
+      <div class="box danger">
+        <h4>Pitfall — assuming dequeue is O(1) just because pop() is</h4>
+        <p>Python's <code>list.pop()</code> with no argument removes from the <i>end</i> in O(1). <code>list.pop(0)</code> removes from the <i>front</i> and is O(n), because every remaining item has to move. It's easy to see "pop" and assume constant time — the argument is what changes everything.</p>
+      </div>
+
+      <h3>Looking ahead</h3>
+      <p>For small or simple applications, list-based dequeue's O(n) cost rarely matters. But for large queues or performance-critical code, Python's <code>collections.deque</code> (optimised for fast appends and pops at both ends) is a common quick fix — and Lesson 5 shows the classic computer-science solution: rebuilding the queue on a <b>circular array</b> so nothing ever has to shift.</p>
+
+      <h3>Quick self-check</h3>
+      <details class="flash"><summary>Which Python list method is typically used to perform the enqueue operation in a list-based queue?</summary>
+        <div class="answer"><code>append()</code> — it adds the new item to the end of the list, which represents the back of the queue.</div>
+      </details>
+      <details class="flash"><summary>Which Python list method is typically used to dequeue the front item from a list-based queue?</summary>
+        <div class="answer"><code>pop(0)</code> — it removes and returns the item at index 0, which represents the front of the queue.</div>
+      </details>
+      <details class="flash"><summary>True or false: using a Python list, both enqueue and dequeue operations always take constant (O(1)) time.</summary>
+        <div class="answer">False. Enqueue (<code>append</code>) is O(1), but dequeue (<code>pop(0)</code>) is O(n) because it must shift every remaining element forward.</div>
+      </details>
+    </section>
+
+    <!-- ============ LESSON 5 ============ -->
+    <section class="lesson" id="l5">
+      <div class="lesson-kicker"><span class="lesson-num">LESSON 5 / 5</span><span class="lesson-time">~25 min</span></div>
+      <h2>Implementing Queues with Circular Arrays</h2>
+      <p class="lede">Turn the array into a loop, and the shifting problem from Lesson 4 disappears entirely.</p>
+
+      <h3>Why circular?</h3>
+      <p>A <b>circular array</b> treats its two ends as connected, forming a logical circle instead of a straight line. When you reach the end of the array, you simply "wrap around" back to the beginning. For a queue, this means enqueue and dequeue can reuse freed-up space at the front without ever shifting the elements in between — solving exactly the O(n) dequeue problem from Lesson 4.</p>
+
+      <div class="box recur">
+        <h4>Structure — key terms</h4>
+        <p><b>Circular array:</b> an array that connects its end to its beginning, letting elements wrap around for efficient space use. <b>Fixed-size buffer:</b> a storage area with a set capacity. <b>Front pointer:</b> the index of the item next in line to be dequeued. <b>Back pointer:</b> the index where the next enqueued item will go. <b>Wrap-around:</b> moving from the end of the array back to index 0 to keep reusing the buffer.</p>
+      </div>
+
+      <h3>The four building blocks</h3>
+      <ol class="tight">
+        <li><b>Initialize</b> — create an array of fixed size; set <code>front</code> and <code>back</code> pointers, usually both starting at 0; set a <code>count</code> variable to 0.</li>
+        <li><b>Enqueue</b> — insert the item at the position after <code>back</code>; advance <code>back = (back + 1) % array_size</code>; increment <code>count</code>.</li>
+        <li><b>Dequeue</b> — return the value at <code>front</code>; advance <code>front = (front + 1) % array_size</code>; decrement <code>count</code>.</li>
+        <li><b>Check full / empty</b> — before enqueueing, check whether <code>count == array_size</code> (full); before dequeueing, check whether <code>count == 0</code> (empty).</li>
+      </ol>
+
+      <div class="box base">
+        <h4>Operation — advancing pointers with modulo arithmetic</h4>
+        <p>Pointers wrap using the modulo operator. If the array size is 5 and <code>back</code> is at index 4, advancing it means <code>back = (4 + 1) % 5 = 0</code> — it wraps to index 0 instead of running off the end. This keeps every pointer permanently inside the bounds of the array, no matter how many enqueues and dequeues have happened.</p>
+      </div>
+
+      <h3>A circular queue, before and after it wraps</h3>
+      <div class="ring-wrap">
+        <div class="ring-block">
+          <div class="ring-cap">state 1 — count: 5, capacity: 8</div>
+          <svg viewBox="0 0 220 220" width="220" height="220">
+            <circle cx="110" cy="110" r="70" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+            <!-- occupied: idx0(front)=28, idx1=19, idx2=45, idx3=13, idx4(back)=7 ; empty: 5,6,7 -->
+            <circle cx="110" cy="40" r="17" fill="var(--ink)"/>
+            <text x="110" y="45" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#fff">28</text>
+            <circle cx="159.5" cy="60.5" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="159.5" y="65.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">19</text>
+            <circle cx="180" cy="110" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="180" y="115" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">45</text>
+            <circle cx="159.5" cy="159.5" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="159.5" y="164.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">13</text>
+            <circle cx="110" cy="180" r="17" fill="var(--base-bg)" stroke="var(--base)" stroke-width="2"/>
+            <text x="110" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#0B6650">7</text>
+            <circle cx="60.5" cy="159.5" r="15" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="40" cy="110" r="15" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="60.5" cy="60.5" r="15" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <text x="110" y="16" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="var(--recur)">front</text>
+            <text x="110" y="207" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="var(--base)">back</text>
+          </svg>
+          <div class="arr" style="justify-content:center;">
+            <div class="cell"><div class="idx">0</div><div class="el pivot">28</div></div>
+            <div class="cell"><div class="idx">1</div><div class="el">19</div></div>
+            <div class="cell"><div class="idx">2</div><div class="el">45</div></div>
+            <div class="cell"><div class="idx">3</div><div class="el">13</div></div>
+            <div class="cell"><div class="idx">4</div><div class="el lo">7</div></div>
+            <div class="cell"><div class="idx">5</div><div class="el empty">·</div></div>
+            <div class="cell"><div class="idx">6</div><div class="el empty">·</div></div>
+            <div class="cell"><div class="idx">7</div><div class="el empty">·</div></div>
+          </div>
+        </div>
+
+        <div class="ring-block">
+          <div class="ring-cap">state 2 — after more enqueues, one dequeue, and a wrap (count: 8, full)</div>
+          <svg viewBox="0 0 220 220" width="220" height="220">
+            <circle cx="110" cy="110" r="70" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+            <!-- idx0(back)=39, idx1(front)=19, idx2=45, idx3=13, idx4=7, idx5=32, idx6=8, idx7=23 -->
+            <circle cx="110" cy="40" r="17" fill="var(--base-bg)" stroke="var(--base)" stroke-width="2"/>
+            <text x="110" y="45" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#0B6650">39</text>
+            <circle cx="159.5" cy="60.5" r="17" fill="var(--ink)"/>
+            <text x="159.5" y="65.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#fff">19</text>
+            <circle cx="180" cy="110" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="180" y="115" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">45</text>
+            <circle cx="159.5" cy="159.5" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="159.5" y="164.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">13</text>
+            <circle cx="110" cy="180" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="110" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">7</text>
+            <circle cx="60.5" cy="159.5" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="60.5" y="164.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">32</text>
+            <circle cx="40" cy="110" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="40" y="115" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">8</text>
+            <circle cx="60.5" cy="60.5" r="17" fill="#FAFAFC" stroke="var(--line)" stroke-width="1.5"/>
+            <text x="60.5" y="65.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">23</text>
+            <text x="110" y="16" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="var(--base)">back</text>
+            <text x="177" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="var(--recur)">front</text>
+          </svg>
+          <div class="arr" style="justify-content:center;">
+            <div class="cell"><div class="idx">0</div><div class="el lo">39</div></div>
+            <div class="cell"><div class="idx">1</div><div class="el pivot">19</div></div>
+            <div class="cell"><div class="idx">2</div><div class="el">45</div></div>
+            <div class="cell"><div class="idx">3</div><div class="el">13</div></div>
+            <div class="cell"><div class="idx">4</div><div class="el">7</div></div>
+            <div class="cell"><div class="idx">5</div><div class="el">32</div></div>
+            <div class="cell"><div class="idx">6</div><div class="el">8</div></div>
+            <div class="cell"><div class="idx">7</div><div class="el">23</div></div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft)">The back pointer reached index 7, so the next enqueue (39) wrapped around to index 0 instead of running off the array. The underlying slots never move — only <code>front</code>, <code>back</code>, and <code>count</code> change.</p>
+
+      <div class="box return">
+        <h4>Cost — O(1) enqueue and dequeue, no shifting, ever</h4>
+        <p>Because both pointers simply advance (wrapping with modulo when needed) instead of shifting elements, enqueue and dequeue are both <b>O(1)</b> — solving the exact dequeue bottleneck the Python-list queue had in Lesson 4.</p>
+      </div>
+
+      <div class="box danger">
+        <h4>Pitfall — telling full and empty apart</h4>
+        <p>A subtle trap: both a full queue and an empty queue can end up with <code>front</code> and <code>back</code> pointing at the same index — pointer position alone is ambiguous. The standard fix is a <code>count</code> variable: <code>count == 0</code> means empty, <code>count == array_size</code> means full. (Some implementations instead reserve one slot that's always left empty.) Skipping this check risks silently overwriting unread data or reading garbage from an empty queue.</p>
+      </div>
+
+      <h3>Circular arrays: strengths and limitations</h3>
+      <table>
+        <tr><th>Advantages</th><th>Disadvantages</th></tr>
+        <tr><td>No shifting required — elements are enqueued/dequeued in place.</td><td>Fixed capacity — can't grow past its initial size without added resizing logic.</td></tr>
+        <tr><td>Predictable memory usage — array size is fixed and known up front.</td><td>Pointer management is trickier, especially around wrap-around.</td></tr>
+        <tr><td>Enqueue and dequeue are both O(1) under normal conditions.</td><td>A full queue blocks new items until space is freed by a dequeue.</td></tr>
+      </table>
+
+      <h3>Quick self-check</h3>
+      <details class="flash"><summary>In a circular array queue, what happens when the back pointer advances past the last array index?</summary>
+        <div class="answer">It wraps around to index 0 — that's the entire point of the modulo arithmetic (<code>back = (back + 1) % array_size</code>).</div>
+      </details>
+      <details class="flash"><summary>What is the primary advantage of using a circular array for implementing a queue?</summary>
+        <div class="answer">It eliminates the need for shifting elements during dequeue operations — the front and back pointers simply advance instead.</div>
+      </details>
+      <details class="flash"><summary>How do circular array queues typically distinguish a full queue from an empty one?</summary>
+        <div class="answer">With a <code>count</code> variable — <code>count == 0</code> means empty, <code>count == array_size</code> means full — since <code>front</code> and <code>back</code> can coincide in both cases.</div>
+      </details>
+    </section>
+
+    <!-- ============ CRAM SHEET ============ -->
+    <section class="cram" id="cram">
+      <div class="lesson-kicker"><span class="lesson-num" style="background:#fff;color:#1B1E2B">CRAM SHEET</span><span class="lesson-time" style="color:#C9CBE8">~8 min — last pass before practice</span></div>
+      <h2>One-Page Recap</h2>
+      <p class="lede">If you only remember these, remember these.</p>
+
+      <div class="box recur">
+        <h4>1. What a queue is</h4>
+        <p>A linear structure where items are added at the <b>back</b> (enqueue) and removed from the <b>front</b> (dequeue), following <b>FIFO</b> (First-In, First-Out). Two ends, not one — that's the whole difference from a stack.</p>
+      </div>
+      <div class="box base">
+        <h4>2. The Queue ADT</h4>
+        <p><b>enqueue(item)</b> — add to back. <b>dequeue()</b> — remove return front. <b>isEmpty()</b> / <b>__len__()</b> — report state. <b>front()</b>/<b>peek()</b> — view the front without removing it. The ADT defines these operations; it says nothing about how they're implemented.</p>
+      </div>
+      <div class="box return">
+        <h4>3. Python list implementation its cost</h4>
+        <p><code>enqueue</code> = <code>append()</code> → O(1). <code>dequeue</code> = <code>pop(0)</code> → O(n), because every remaining item shifts left. This asymmetry is the whole reason circular arrays exist.</p>
+      </div>
+      <div class="box danger">
+        <h4>4. Stacks vs. queues, in one line</h4>
+        <p>Stack: one end (top), push/pop, LIFO — good for reversing/undoing. Queue: two ends (front/back), enqueue/dequeue, FIFO — good for fairness/order preservation.</p>
+      </div>
+      <div class="box recur">
+        <h4>5. Circular arrays: the fix</h4>
+        <p>Treat the array's two ends as connected. Advance <code>front</code>/<code>back</code> with <b>modulo arithmetic</b> (<code>(i + 1) % size</code>) so they wrap instead of running off the array. Both enqueue and dequeue become <b>O(1)</b> — no shifting, ever.</p>
+      </div>
+      <div class="box base">
+        <h4>6. Full vs. empty</h4>
+        <p><code>front</code> and <code>back</code> can land on the same index in <i>both</i> states — pointers alone can't tell them apart. Track a <b>count</b> variable: <code>count == 0</code> → empty, <code>count == array_size</code> → full.</p>
+      </div>
+
+      <table>
+        <tr><th>Concept</th><th>One-line definition</th></tr>
+        <tr><td>Queue</td><td>A linear data structure restricted to add-at-back / remove-at-front, following FIFO.</td></tr>
+        <tr><td>FIFO</td><td>First-In, First-Out — the earliest item added is removed first.</td></tr>
+        <tr><td>Enqueue / Dequeue</td><td>Add to the back / remove return the front item.</td></tr>
+        <tr><td>ADT</td><td>A model defining a data structure by its behaviour, not its implementation.</td></tr>
+        <tr><td>Circular array</td><td>An array whose two ends are treated as connected, allowing index wrap-around.</td></tr>
+        <tr><td>Front / back pointer</td><td>Index of the next item to dequeue / index where the next enqueue will land.</td></tr>
+        <tr><td>Wrap-around</td><td>Moving a pointer from the last index back to index 0 to reuse buffer space.</td></tr>
+        <tr><td>Modulo arithmetic</td><td>The <code>% array_size</code> operation used to keep pointers within bounds.</td></tr>
+      </table>
+    </section>
+
+    <!-- ============ QUIZ ============ -->
+    <section class="lesson" id="quiz">
+      <div class="lesson-kicker"><span class="lesson-num">PRACTICE</span><span class="lesson-time">~7 min — self-test</span></div>
+      <h2>Full Practice Quiz (16 questions)</h2>
+      <p class="lede">Cover the answer, say it out loud, then click to check. Questions are drawn from the e-lesson's knowledge checks scattered through the lessons, plus the final 10-question wrap-up quiz.</p>
+
+      <div class="quiz-q"><span class="qnum">Q1</span><p class="qtext">What is the primary principle that defines the operation of a queue?</p>
+        <details><summary></summary><div class="ans">First-In, First-Out (FIFO).</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q2</span><p class="qtext">Which of the following scenarios best illustrates the concept of a queue?</p>
+        <details><summary></summary><div class="ans">A line of customers waiting to order at a coffee shop.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q3</span><p class="qtext">Which of the following are examples of queue applications in computing? Select all that apply.</p>
+        <details><summary></summary><div class="ans">Handling requests in web servers; Task scheduling in operating systems. (Sorting algorithms and undo functionality are not queue applications — undo is a stack/LIFO behaviour.)</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q4</span><p class="qtext">An Abstract Data Type defines the operations and behaviours of a data structure without specifying how those operations are implemented. True or false?</p>
+        <details><summary></summary><div class="ans">True.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q5</span><p class="qtext">Match each Queue ADT operation to what it does: enqueue(item), isEmpty(), __len__(), dequeue().</p>
+        <details><summary></summary><div class="ans">enqueue(item) → adds a new item to the back of the queue. isEmpty() → reports whether the queue currently contains no items. __len__() → returns the current number of items in the queue. dequeue() → removes and returns the item at the front of the queue.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q6</span><p class="qtext">Which Python list method is typically used to perform the enqueue operation in a queue implemented with a list?</p>
+        <details><summary></summary><div class="ans"><code>append()</code>.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q7</span><p class="qtext">Which Python list method is typically used to dequeue the front item from a queue implemented with a list?</p>
+        <details><summary></summary><div class="ans"><code>pop(0)</code>.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q8</span><p class="qtext">A developer implements a queue in Python using a list, adding items with append() and removing items from the front with pop(0). As the queue grows larger, which explanation best describes why the dequeue operation becomes less efficient?</p>
+        <details><summary></summary><div class="ans">Removing the first item forces all remaining elements to shift left, so each dequeue takes O(n) time.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q9</span><p class="qtext">Which statement best explains the structure of a circular array in a queue?</p>
+        <details><summary></summary><div class="ans">Its end and beginning are treated as connected, allowing positions to wrap around and reuse space efficiently.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q10</span><p class="qtext">To wrap the front or back pointer to the beginning of the array after reaching the end, circular array queues use __________ arithmetic.</p>
+        <details><summary></summary><div class="ans">Modulo.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q11</span><p class="qtext">True or false: using a Python list, both enqueue and dequeue operations always take constant (O(1)) time.</p>
+        <details><summary></summary><div class="ans">False — enqueue is O(1), but dequeue (pop(0)) is O(n) due to shifting.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q12</span><p class="qtext">What is the primary advantage of using a circular array for implementing a queue?</p>
+        <details><summary></summary><div class="ans">It eliminates the need for shifting elements during dequeue operations.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q13</span><p class="qtext">A queue contains A, B, and C, with A at the front (the first item enqueued). What happens when you call dequeue()?</p>
+        <details><summary></summary><div class="ans">A is removed and returned from the front of the queue — B becomes the new front.</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q14</span><p class="qtext">Which statement best distinguishes how stacks and queues remove items?</p>
+        <details><summary></summary><div class="ans">Stacks remove from the same end items are added to (the top); queues remove from the opposite end (the front) from where items are added (the back).</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q15</span><p class="qtext">In a circular array queue, how do you detect that the queue is full?</p>
+        <details><summary></summary><div class="ans">When the count variable equals the array's fixed capacity (pointer position alone is ambiguous, since front and back can also coincide when the queue is empty).</div></details></div>
+
+      <div class="quiz-q"><span class="qnum">Q16</span><p class="qtext">In a circular array queue, what do the front and back pointers each track?</p>
+        <details><summary></summary><div class="ans">Front marks the index of the oldest item — the next one to be dequeued. Back marks the index where the next enqueued item will be placed.</div></details></div>
+
+    </section>
+
+  </main>
+
+  <footer>Condensed study aid derived from <i>IT2X11 — E-Lesson — Topic 09 — Queues</i>. For revision use — always check back against the original e-lesson for anything graded.</footer>
+
+</div>
+</body>
+</html>
